@@ -15,7 +15,6 @@
 -spec start_transaction(Pid::term(), TimeStamp::term(), TxnProperties::term())
         -> {ok, {interactive, term()} | {static, {term(), term()}}} | {error, term()}.
 start_transaction(Pid, TimeStamp, TxnProperties) ->
-    io:format("Dispatcher start transaction\n"),
     EncMsg = antidote_pb_codec:encode(start_transaction,
                                               {TimeStamp, TxnProperties}),
     Result = antidotec_pb_socket:call_infinity(Pid,{req, EncMsg, ?TIMEOUT}),
@@ -41,7 +40,6 @@ abort_transaction(Pid, {interactive, TxId}) ->
 -spec commit_transaction(Pid::term(), TxId::{interactive,term()} | {static,term()}) ->
                                 {ok, term()} | {error, term()}.
 commit_transaction(Pid, {interactive, TxId}) ->
-    io:format("Dispatcher commit static transaction\n"),
     EncMsg = antidote_pb_codec:encode(commit_transaction, TxId),
     Result = antidotec_pb_socket:call_infinity(Pid,{req, EncMsg, ?TIMEOUT}),
     case Result of
@@ -51,12 +49,11 @@ commit_transaction(Pid, {interactive, TxId}) ->
     end;
 
 commit_transaction(Pid, {static, _TxId}) ->
-    io:format("Dispatcher commit interactive transaction\n"),
     antidotec_pb_socket:get_last_commit_time(Pid).
 
 -spec update_objects(Pid::term(), Updates::[{term(), term(), term()}], TxId::term()) -> ok | {error, term()}.
 update_objects(Pid, Updates, {interactive, TxId}) ->
-    io:format("Dispatcher update objects ~p\n", [Updates]),
+    materializer:update(Updates, {interactive, TxId}),
     EncMsg = antidote_pb_codec:encode(update_objects, {Updates, TxId}),
     Result = antidotec_pb_socket:call_infinity(Pid,{req, EncMsg, ?TIMEOUT}),
     case Result of
@@ -66,7 +63,7 @@ update_objects(Pid, Updates, {interactive, TxId}) ->
     end;
 
 update_objects(Pid, Updates, {static, TxId}) ->
-    io:format("Dispatcher update objects ~p\n", [Updates]),
+    materializer:update(Updates, {interactive, TxId}),
     {Clock, Properties} = TxId,
     EncMsg = antidote_pb_codec:encode(static_update_objects,
                                       {Clock, Properties, Updates}),
@@ -84,7 +81,7 @@ update_objects(Pid, Updates, {static, TxId}) ->
 
 -spec read_values(Pid::term(), Objects::[term()], TxId::term()) -> {ok, [term()]}  | {error, term()}.
 read_values(Pid, Objects, {interactive, TxId}) ->
-    io:format("Dispatcher read values ~p\n", [Objects]),
+    materializer:read(Objects, {interactive, TxId}),
     EncMsg = antidote_pb_codec:encode(read_objects, {Objects, TxId}),
     Result = antidotec_pb_socket:call_infinity(Pid, {req, EncMsg, ?TIMEOUT}),
     case Result of
@@ -95,6 +92,7 @@ read_values(Pid, Objects, {interactive, TxId}) ->
 
 read_values(Pid, Objects, {static, TxId}) ->
     {Clock, Properties} = TxId,
+    materializer:read(Objects, {interactive, TxId}),
     EncMsg = antidote_pb_codec:encode(static_read_objects,
                                       {Clock, Properties, Objects}),
     Result = antidotec_pb_socket:call_infinity(Pid, {req, EncMsg, ?TIMEOUT}),

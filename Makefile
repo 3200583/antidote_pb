@@ -13,7 +13,7 @@ deps:
 clean:
 	@${REBAR} clean
 
-include tools.mk
+#include tools.mk
 
 typer:
 	typer --annotate -I ../ --plt $(PLT) -r src
