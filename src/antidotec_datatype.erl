@@ -27,7 +27,7 @@
 -endif.
 
 
--define(MODULES, [antidotec_counter, antidotec_set, antidotec_reg]).
+-define(MODULES, [antidotec_counter, antidotec_set, antidotec_reg, antidote_crdt_map_rr]).
 
 -export([module_for_type/1,
          module_for_term/1]).
@@ -67,7 +67,8 @@
     antidotec_counter | antidotec_set | antidotec_reg.
 module_for_type(set) -> antidotec_set;
 module_for_type(counter)  -> antidotec_counter;
-module_for_type(reg) -> antidotec_reg.
+module_for_type(reg) -> antidotec_reg;
+module_for_type(map) -> antidote_crdt_map_rr.
 
 %% @doc Returns the container module name for the given term.
 %% Returns undefined if the module is not known.

@@ -97,7 +97,10 @@ read_objects(Pid, Objects, Transaction) ->
             ResObjects = lists:map(
                 fun({Type, Val}) ->
                     Mod = antidotec_datatype:module_for_type(Type),
-                    Mod:new(Val)
+                    case Type of
+                        map -> Mod:new();
+                        _ -> Mod:new(Val)
+                    end
                 end, Values),
             {ok, ResObjects};
         Other ->
