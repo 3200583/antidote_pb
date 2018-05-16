@@ -18,6 +18,7 @@ load(Dep) ->
 main(_) ->
     [load(Dep) || Dep <- ["riak_pb", "antidote_pb", "protobuffs", "antidote_crdt"]],
     {ok, Pid} = antidotec_pb_socket:start(?ADDRESS, ?PORT),
+    dispatcher:init(),
     Bound_object = {?Key, antidote_crdt_counter_pn, ?Bucket},
     io:format("Starting Test transaction~n"),
     case antidotec_pb:start_transaction(Pid, ignore, {}) of

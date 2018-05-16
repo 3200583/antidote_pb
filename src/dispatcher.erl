@@ -2,7 +2,7 @@
 
 -include_lib("riak_pb/include/antidote_pb.hrl").
 
--export([
+-export([init/0,
          start_transaction/3,
          abort_transaction/2,
          commit_transaction/2,
@@ -11,6 +11,8 @@
          ]).
 
 -define(TIMEOUT, 10000).
+
+init() -> materializer:init().
 
 -spec start_transaction(Pid::term(), TimeStamp::term(), TxnProperties::term())
         -> {ok, {interactive, term()} | {static, {term(), term()}}} | {error, term()}.
@@ -81,7 +83,8 @@ update_objects(Pid, Updates, {static, TxId}) ->
 
 -spec read_values(Pid::term(), Objects::[term()], TxId::term()) -> {ok, [term()]}  | {error, term()}.
 read_values(Pid, Objects, {interactive, TxId}) ->
-    materializer:read(Objects, {interactive, TxId}),
+    M = materializer:read(Objects, {interactive, TxId}),
+    io:format("Materialize value: ~p\n", [M]),
     EncMsg = antidote_pb_codec:encode(read_objects, {Objects, TxId}),
     Result = antidotec_pb_socket:call_infinity(Pid, {req, EncMsg, ?TIMEOUT}),
     case Result of
