@@ -19,7 +19,7 @@ load(Dep) ->
 main(_) ->
     [load(Dep) || Dep <- ["riak_pb", "antidote_pb", "protobuffs", "antidote_crdt"]],
     {ok, Pid} = antidotec_pb_socket:start(?ADDRESS, ?PORT),
-    dispatcher:init(),
+    dispatcher:start_link(),
     Counter = {?CounterKey, antidote_crdt_counter_pn, ?Bucket},
     
     io:format("--------- Starting First transaction ---------\n"),
