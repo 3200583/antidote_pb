@@ -8,7 +8,7 @@
         update/2]).
 
 
-init() -> ets:new(cache, [set, named_table, {read_concurrency, true}]).
+init() -> ets:new(cache, [set, public, named_table, {read_concurrency, true}]).
 
 start_transaction(_Pid, _TimeStamp, _TxnProperties) ->
     ok.
@@ -59,5 +59,5 @@ apply_update([Update|Tail], Acc) ->
     update_cache({Key, Bucket}, Result),
     apply_update(Tail, [Result|Acc]).
 
-update_cache(Key = {_K, _Bucket}, Value) ->
-    ets:insert(cache, {Key, Value}).
+update_cache({Key, Bucket}, Value) ->
+    ets:insert(cache, {{Key, Bucket}, Value}).

@@ -21,7 +21,7 @@ load(Dep) ->
 
 main(_) ->
     [load(Dep) || Dep <- ["riak_pb", "antidote_pb", "protobuffs", "antidote_crdt"]],
-    dispatcher:init(),
+    dispatcher:start_link(),
     Key = <<"pb_client_SUITE_crdt_map_aw_test">>,
     {ok, Pid1} = antidotec_pb_socket:start(?ADDRESS, ?PORT),
     Bound_object = {Key, antidote_crdt_map_go, <<"bucket">>},
@@ -46,6 +46,7 @@ main(_) ->
     %% Read committed updated
     {ok, Tx3} = antidotec_pb:start_transaction(Pid1, ignore, {}),
     {ok, [Val]} = antidotec_pb:read_values(Pid1, [Bound_object], Tx3),
+    io:format("Value read before the commit~p~n", [Val]),
     {ok, _} = antidotec_pb:commit_transaction(Pid1, Tx3),
     ExpectedRes = {map, [
       {{<<"a">>, antidote_crdt_register_mv}, [<<"42">>]},
