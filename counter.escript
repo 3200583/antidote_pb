@@ -22,13 +22,10 @@ main(_) ->
     C = {<<"value">>, antidote_crdt_counter_pn, ?Bucket},
     {ok, Tx} = antidotec_pb:start_transaction(Pid, ignore, {}),
     antidotec_pb:update_objects(Pid, [{Counter, increment, 11}], Tx),
-    {ok, [CounterVal]} = antidotec_pb:read_objects(Pid, [Counter], Tx),
-    io:format("Counter value is now: ~p~n", [CounterVal]),    
     antidotec_pb:update_objects(Pid, [{Counter, increment, 3}], Tx),
-    {ok, [CounterVal2]} = antidotec_pb:read_objects(Pid, [Counter], Tx),
-    io:format("Counter value is now: ~p~n", [CounterVal2]),    
-    case antidotec_counter:value(CounterVal2) of
-        X when X < 50 -> antidotec_pb:update_objects(Pid, [{C, increment, 4}], Tx);
+    {ok, [Val]} = antidotec_pb:read_objects(Pid, [Counter], Tx),
+    case antidotec_counter:value(Val) of
+        X when X < 10 -> antidotec_pb:update_objects(Pid, [{C, increment, 4}], Tx);
         _ -> antidotec_pb:update_objects(Pid, [{C, increment, 7}], Tx)
     end,
     {ok, [Val2]} = antidotec_pb:read_objects(Pid, [C], Tx),
